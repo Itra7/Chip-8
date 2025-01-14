@@ -7,14 +7,17 @@
 #include <cstdint>
 #include <string>
 
+#define FONT_START_ADDRESS 0
+#define FONT_SIZE 80
+
+
 // 0x200-0xFFF reserved memory for programs, 0x000-0x1FF reserved for interpreter
 const unsigned int memory_size = 4096;
 const unsigned int registers_size = 16;
-const unsigned int fontset_size = 80;
 const unsigned int SCREEN_WIDTH = 64;
 const unsigned int SCREEN_HEIGHT = 32;
 
-uint8_t fontset[fontset_size] =
+uint8_t fontset[] =
 {
 	0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
 	0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -47,15 +50,16 @@ class Chip8 {
 
   private:
 
+    void executeInstruction();
     // 16 8-bit data registers V0-VF
-    uint8_t V[registers_size];
+    uint8_t V[registers_size]{0};
     // we will use mask 0x0FFF to ensure 12bits
     uint16_t I;
     uint16_t pc;
-    uint16_t stack[16];
+    uint16_t stack[16]{0};
     uint8_t sp;
     uint8_t delay_timer;
     uint8_t sound_timer;
-    uint8_t key[16];
+    uint8_t keys[16]{0};
     uint8_t video[64 * 32]{0};
 };
