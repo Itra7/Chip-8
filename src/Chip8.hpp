@@ -49,7 +49,7 @@ class Chip8 {
 
 
   private:
-
+    void print();
     void executeInstruction();
     // 16 8-bit data registers V0-VF
     uint8_t V[registers_size]{0};

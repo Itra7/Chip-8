@@ -8,22 +8,38 @@
 #include <string>
 #include <iostream>
 #include <exception>
+#include <cstring>
 #include <random>
+#include <unistd.h>
 
+
+void Chip8::print(){
+    std::cout << "---------" << std::endl;
+    std::cout << "PC = " << pc << std::endl;
+    std::cout << "I = " << I << std::endl;
+    std::cout << "registers ";
+    for(int i = 0; i < 16; i++){
+        std::cout << "V[" << i << "] = " << static_cast<int>(V[i]);
+        std::cout << "\t";
+    } 
+    std::cout << std::endl;
+    std::cout << "opcode = " << opcode << std::endl;
+
+}
 
 void Chip8::executeInstruction(){
     switch(opcode & 0xF000){
         case 0x0000:{
             switch(opcode & 0x000F){
                 //00EE RET instruction
-                case 0x000E:{       
+                case 0x000E:{      
                     pc = stack[sp];
                     sp--;
                     break;
                 }
                 //00E0 clear the display
                 case 0x0000:{
-                    // TODO
+                    memset(video, 0, sizeof(video));
                     break;
                 }
 
@@ -211,14 +227,17 @@ void Chip8::executeInstruction(){
                 V[0xF] = 0;
                 for(int row = 0; row < height; row++){
                     uint8_t pixel = memory[I+height];
+
                     for(int col = 0; col < 8; col++){
-                        if(pixel & (0x80 >> col) != 0)
+                        
+                        if((pixel & (0x80 >> col)) != 0){
                             if(video[(yPos+col)*SCREEN_WIDTH + (xPos+row)] == 1){
                                 V[0xF] = 1;
                             }else{
                                 V[0xF] = 0;
                             }
                             video[(yPos+col)*SCREEN_WIDTH + (xPos+row)] ^=1;
+                        }
                     }
                 }                
                 break;
@@ -423,7 +442,6 @@ void Chip8::Cycle() {
     executeInstruction();
 
     // TODO: delay timer (later sound timer)?
-
     
 
 
@@ -445,11 +463,10 @@ int main(int argc,char *argv[]){
          return 1;
     }
 
-    /*
-        while(not exist){
-            chip8.cycle();
-        }
-    */
+    while(1){
+        chip8.Cycle();
+        //sleep(1);
+    }
 
     return 0;
 }
