@@ -1,0 +1,6 @@
+/home/filip/CLionProjects/Chip-8/CMakeFiles/chip8.dir
+/home/filip/CLionProjects/Chip-8/CMakeFiles/edit_cache.dir
+/home/filip/CLionProjects/Chip-8/CMakeFiles/rebuild_cache.dir
+/home/filip/CLionProjects/Chip-8/includes/glad/CMakeFiles/glad.dir
+/home/filip/CLionProjects/Chip-8/includes/glad/CMakeFiles/edit_cache.dir
+/home/filip/CLionProjects/Chip-8/includes/glad/CMakeFiles/rebuild_cache.dir

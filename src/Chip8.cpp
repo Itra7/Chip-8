@@ -12,6 +12,25 @@
 #include <random>
 #include <unistd.h>
 
+uint8_t fontset[] =
+{
+	0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+	0x20, 0x60, 0x20, 0x20, 0x70, // 1
+	0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+	0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+	0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+	0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+	0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+	0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+	0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+	0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+	0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+	0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+	0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+	0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+	0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+	0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+};
 
 void Chip8::print(){
     std::cout << "---------" << std::endl;
@@ -229,17 +248,17 @@ void Chip8::executeInstruction(){
                     uint8_t pixel = memory[I+height];
 
                     for(int col = 0; col < 8; col++){
-                        
+                        //std::cout << static_cast<int>(pixel) << std::endl;
                         if((pixel & (0x80 >> col)) != 0){
                             if(video[(yPos+col)*SCREEN_WIDTH + (xPos+row)] == 1){
                                 V[0xF] = 1;
                             }else{
                                 V[0xF] = 0;
                             }
-                            video[(yPos+col)*SCREEN_WIDTH + (xPos+row)] ^=1;
+                            video[(yPos+col)*SCREEN_WIDTH + (xPos+row)] ^= 1;
                         }
                     }
-                }                
+                }  
                 break;
         }
         
@@ -436,37 +455,17 @@ void Chip8::LoadRom(const std::string pathtofile){
 void Chip8::Cycle() {
     // read from memory operation code and increment program counter
     opcode = (memory[pc & 0xFFF] << 8) | (memory[(pc+1)&0xFFF]);
-    pc += 2;
+    pc += 2;   
 
     // TODO: execute that opcode?
     executeInstruction();
 
-    // TODO: delay timer (later sound timer)?
-    
-
-
-}
-
-
-
-int main(int argc,char *argv[]){
-
-    if(argc != 2){
-      std::cout << "Chip8::main: Wrong number of arguments" << std::endl;
-      return 0;
+    // TODO: delay timer (later sound timer)
+    if(delay_timer > 0){
+        delay_timer--;
     }
-    Chip8 chip8;
-    try{
-        chip8.LoadRom(std::string(argv[1]));
-    }catch(std::invalid_argument& e){
-         std::cout << e.what() << std::endl;
-         return 1;
+    if(sound_timer > 0){
+        sound_timer--;
     }
 
-    while(1){
-        chip8.Cycle();
-        //sleep(1);
-    }
-
-    return 0;
 }
