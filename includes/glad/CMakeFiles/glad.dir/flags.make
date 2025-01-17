@@ -6,5 +6,5 @@ C_DEFINES =
 
 C_INCLUDES = -I/home/filip/CLionProjects/Chip-8/includes/glad/include
 
-C_FLAGS = 
+C_FLAGS = -g
 

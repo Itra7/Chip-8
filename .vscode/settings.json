@@ -53,6 +53,7 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "cstring": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "sstream": "cpp"
     }
 }

@@ -4,6 +4,7 @@ project(chip8)
 set(CMAKE_CXX_STANDARD 14)
 find_package(glfw3 REQUIRED)
 find_package(OpenGL REQUIRED)
+add_compile_options(-g)
 
 add_subdirectory(includes/glad)
 add_executable(chip8 src/main.cpp src/Chip8.cpp)

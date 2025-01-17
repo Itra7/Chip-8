@@ -331,7 +331,14 @@ CMakeFiles/chip8.dir/src/main.cpp.o: \
  /usr/include/glm/ext/vector_uint1.hpp \
  /usr/include/glm/ext/vector_uint1_sized.hpp /usr/include/c++/14/cstring \
  /usr/include/string.h /usr/include/strings.h \
- /usr/include/glm/gtc/type_ptr.inl \
+ /usr/include/glm/gtc/type_ptr.inl /usr/include/unistd.h \
+ /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
+ /usr/include/x86_64-linux-gnu/bits/environments.h \
+ /usr/include/x86_64-linux-gnu/bits/confname.h \
+ /usr/include/x86_64-linux-gnu/bits/getopt_posix.h \
+ /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
+ /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
+ /usr/include/linux/close_range.h \
  /home/filip/CLionProjects/Chip-8/src/shader.h \
  /usr/include/c++/14/fstream /usr/include/c++/14/bits/codecvt.h \
  /usr/include/x86_64-linux-gnu/c++/14/bits/basic_file.h \

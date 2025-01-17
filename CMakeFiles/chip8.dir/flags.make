@@ -6,5 +6,5 @@ CXX_DEFINES =
 
 CXX_INCLUDES = -I/home/filip/CLionProjects/Chip-8/includes/glad/include
 
-CXX_FLAGS = -std=gnu++14
+CXX_FLAGS = -std=gnu++14 -g
 

@@ -32,6 +32,12 @@ uint8_t fontset[] =
 	0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
 
+void Chip8::setKey(int key){
+    keys[key] = 0x1;
+}
+void Chip8::unsetKey(int key){
+    keys[key] = 0x0;
+}
 void Chip8::print(){
     std::cout << "---------" << std::endl;
     std::cout << "PC = " << pc << std::endl;
@@ -51,14 +57,15 @@ void Chip8::executeInstruction(){
         case 0x0000:{
             switch(opcode & 0x000F){
                 //00EE RET instruction
-                case 0x000E:{      
+                case 0x000E:{  
+                    --sp;    
                     pc = stack[sp];
-                    sp--;
                     break;
                 }
                 //00E0 clear the display
                 case 0x0000:{
                     memset(video, 0, sizeof(video));
+                    drawflag = true;
                     break;
                 }
 
@@ -129,6 +136,7 @@ void Chip8::executeInstruction(){
                     uint8_t X = (opcode & 0x0F00) >> 8;
                     uint8_t Y = (opcode & 0x00F0) >> 4;
                     V[X] = V[X] | V[Y];
+                    V[0xF]=0;
                     break;
                 }
                 //8xy2 Vx=Vx AND Vy
@@ -136,6 +144,7 @@ void Chip8::executeInstruction(){
                     uint8_t X = (opcode & 0x0F00) >> 8;
                     uint8_t Y = (opcode & 0x00F0) >> 4;
                     V[X] = V[X] & V[Y];
+                    V[0xF]=0;
                     break;
                 }
                 //8xy3 Vx = Vx XOR Vy
@@ -143,6 +152,7 @@ void Chip8::executeInstruction(){
                     uint8_t X = (opcode & 0x0F00) >> 8;
                     uint8_t Y = (opcode & 0x00F0) >> 4;
                     V[X] = V[X] ^ V[Y];
+                    V[0xF]=0;
                     break;
                 }
                 //8xy4 - ADD Vx, Vy
@@ -161,7 +171,7 @@ void Chip8::executeInstruction(){
                 case 0x0005:{
                     uint8_t X = (opcode & 0x0F00) >> 8;
                     uint8_t Y = (opcode & 0x00F0) >> 4;
-                    if(V[X] > V[Y]){
+                    if(V[X] < V[Y]){
                         V[0xF]=1;
                     }else{
                         V[0xF]=0;
@@ -171,16 +181,15 @@ void Chip8::executeInstruction(){
                 }
                 //8xy6 Vx=Vx >> 1
                 case 0x0006:{
-                    uint8_t X = (opcode & 0x0F00)>>8;
-                    V[0xF]=(V[X]&0x1); // because of big endian
-                    V[X] >>= 1;
-                    break;
+                    V[0xF] = V[(opcode & 0x0F00) >> 8] & 0x1;
+			        V[(opcode & 0x0F00) >> 8] >>= 1;
+	                break;
                 }
                 //8xy7 Vx=Vy-Vx
                 case 0x0007:{
                     uint8_t X = (opcode & 0x0F00) >> 8;
                     uint8_t Y = (opcode & 0x00F0) >> 4;
-                    if(V[Y] > V[X]){
+                    if(V[Y] < V[X]){
                         V[0xF] = 1;
                     }else{
                         V[0xF] = 0;
@@ -190,13 +199,15 @@ void Chip8::executeInstruction(){
                 }
                 //8xyE Vx = Vx SHL 1
                 case 0x000E:{
-                    uint8_t X = (opcode & 0x0F00)>>8;
-                    int mask = 1 << (sizeof(uint8_t)*8-1);
-                    V[0xF]=V[X]&mask;
-                    V[X] <<=1;
-                    break;      
+                	V[0xF] = V[(opcode & 0x0F00) >> 8] >> 7;
+			        V[(opcode & 0x0F00) >> 8] <<= 1;
+    	    		break;     
                 }
+                 default:
+                    std::cout << "invalid op code 8" << opcode << std::endl;
+                    break;  
             }
+            break;
 
         }
         //9xy0 skip next instruction if Vx!=Vy
@@ -235,35 +246,30 @@ void Chip8::executeInstruction(){
         }
         //Dxyn
         case 0xD000:{
-            	uint8_t X = (opcode & 0x0F00) >> 8;
-                uint8_t Y = (opcode & 0x00F0) >> 4;
-                uint8_t height = opcode & 0x000Fu;
+            unsigned short x = V[(opcode & 0x0F00) >> 8];
+			unsigned short y = V[(opcode & 0x00F0) >> 4];
+			unsigned short height = opcode & 0x000F;
+			unsigned short pixel;
 
-                // Wrap if going beyond screen boundaries
-                uint8_t xPos = V[X] % SCREEN_WIDTH;
-                uint8_t yPos = V[Y] % SCREEN_HEIGHT;
-
-                V[0xF] = 0;
-                for(int row = 0; row < height; row++){
-                    uint8_t pixel = memory[I+height];
-
-                    for(int col = 0; col < 8; col++){
-                        //std::cout << static_cast<int>(pixel) << std::endl;
-                        if((pixel & (0x80 >> col)) != 0){
-                            if(video[(yPos+col)*SCREEN_WIDTH + (xPos+row)] == 1){
-                                V[0xF] = 1;
-                            }else{
-                                V[0xF] = 0;
-                            }
-                            video[(yPos+col)*SCREEN_WIDTH + (xPos+row)] ^= 1;
-                        }
-                    }
-                }  
+			V[0xF] = 0;
+			for(int yline = 0; yline < height; yline++){
+				pixel = memory[I + yline];
+				for(int xline = 0; xline < 8; xline++){
+					if((pixel & (0x80 >> xline)) != 0){
+						if(video[(x + xline + ((y + yline) * 64))] == 1){
+							V[0xF] = 1;
+						}
+                        
+						video[x + xline + ((y + yline) * 64)] ^= 1;
+					}
+				}
+			}
+                drawflag=true;
                 break;
         }
         
         case 0xE000:{
-            switch(opcode & 0x000E){
+            switch(opcode & 0x000F){
                 //Ex9E Skip next instruction if Vx == key?
                 case 0x000E:{
                     uint8_t X = (opcode & 0x0F00) >> 8;
@@ -280,9 +286,12 @@ void Chip8::executeInstruction(){
                     }
                     break;
                 }
+                default:
+                    std::cout << "invalid op code WHTA"  << opcode << std::endl;
+                    break;  
             }
+            break;
         }
-
         case 0xF000:{
             switch(opcode & 0x00FF){
                 //Fx07 Vx=delay_timer
@@ -377,11 +386,13 @@ void Chip8::executeInstruction(){
                 //Fx33  
                 case 0x0033:{
                     uint8_t X = (opcode & 0x0F00) >> 8;
+                    uint8_t copy = V[X];
                     memory[I+2] = V[X]%10;
                     V[X]/=10;
                     memory[I+1] = V[X]%10;
                     V[X]/=10;
                     memory[I] = V[X]%10;
+                    V[X]=copy;
                     break;
                 }
                 //Fx55
@@ -390,6 +401,7 @@ void Chip8::executeInstruction(){
                     for(uint8_t i = 0; i <= X; i++){
                         memory[i+I] = V[i];
                     }
+                    I = I + X + 1;
                     break;
                 }
                 //Fx65 
@@ -398,21 +410,25 @@ void Chip8::executeInstruction(){
                     for(uint8_t i = 0; i <= X; i++){
                         V[i] = memory[I+i];
                     }
+                    I = I + X + 1;
                     break;
                 }
+                default:
+                    std::cout << "invalid op code " << opcode << std::endl;
+                    break;
 
             }
         }
-
+        
     }
 
 }
 
 
 Chip8::Chip8(){
-    for(uint8_t& element : memory){
-        element = 0;
-    }
+    memset(memory,0,sizeof(memory));
+    memset(V,0,sizeof(V));
+    memset(stack, 0,sizeof(stack));
     for(int i = FONT_START_ADDRESS; i < FONT_SIZE; i++){
         memory[i] = fontset[i];
     }
@@ -455,7 +471,14 @@ void Chip8::LoadRom(const std::string pathtofile){
 void Chip8::Cycle() {
     // read from memory operation code and increment program counter
     opcode = (memory[pc & 0xFFF] << 8) | (memory[(pc+1)&0xFFF]);
-    pc += 2;   
+    printf("%.4X %.4X %.2X ", pc, opcode, sp);
+    for (int i = 0; i < 15; i++){
+        printf("%.2X ", V[i]);
+    }
+
+    pc += 2;
+    printf("\n");
+
 
     // TODO: execute that opcode?
     executeInstruction();

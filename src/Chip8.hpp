@@ -24,9 +24,12 @@ class Chip8 {
     void LoadRom(const std::string pathtofile);
     void Cycle();
     void getMemory(int index);
-	 
+    void setKey(int);
+    void unsetKey(int);
+
     uint8_t memory[memory_size];
     uint16_t opcode;
+    bool drawflag;
     uint8_t video[64 * 32]{0};
     
   private:
